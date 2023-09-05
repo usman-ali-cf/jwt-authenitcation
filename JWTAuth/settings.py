@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'userapi',
     'rest_framework_simplejwt',
+
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+    ]
 }
 
 SIMPLE_JWT = {

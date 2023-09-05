@@ -54,7 +54,6 @@ class AuthUserListView(APIView):
     """
     a class based view: to list all the user data, JWTAuthentication is applied
     """
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -75,7 +74,6 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
         a class based view: to edit any user data, JWTAuthentication is applied
     """
     queryset = AuthUser.objects.all()
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = AuthUserSerializer
     lookup_field = "id"
@@ -83,7 +81,7 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         snippet = self.get_object()
         serialized = AuthUserSerializer(snippet)
-        return JsonResponse(serialized.data)
+        return Response(serialized.data, status=status.HTTP_200_OK )
 
     def partial_update(self, request, *args, **kwargs):
         snippet = self.get_object()
@@ -91,8 +89,8 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
         serialized = AuthUserSerializer(snippet, data=data)
         if serialized.is_valid():
             serialized.save()
-            return JsonResponse(serialized.data, status=status.HTTP_200_OK)
-        return JsonResponse(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serialized.data, status=status.HTTP_200_OK)
+        return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         snippet = self.get_object()
