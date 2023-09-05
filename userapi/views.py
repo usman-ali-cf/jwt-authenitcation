@@ -15,6 +15,9 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 
 class LoginViewToken(TokenObtainPairView):
+    """
+    a class based view: to authenticate the user and generate jwt token
+    """
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
@@ -30,11 +33,10 @@ class LoginViewToken(TokenObtainPairView):
         return response
 
 
-def home(request):
-    return HttpResponse("Hello")
-
-
 class RegisterView(APIView):
+    """
+    a class based view: to create new user by using serializer
+    """
 
     def post(self, request):
         serializer = AuthUserSerializer(data=request.data)
@@ -44,7 +46,34 @@ class RegisterView(APIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
+def home(request):
+    return HttpResponse("Hello")
+
+
+class AuthUserListView(APIView):
+    """
+    a class based view: to list all the user data, JWTAuthentication is applied
+    """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = AuthUser.objects.all()
+        serializer = AuthUserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AuthUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+
 class AuthUserEditView(RetrieveUpdateDestroyAPIView):
+    """
+        a class based view: to edit any user data, JWTAuthentication is applied
+    """
     queryset = AuthUser.objects.all()
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -70,20 +99,3 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
         snippet.delete()
         serialized = AuthUserSerializer(snippet)
         return JsonResponse(serialized.data)
-
-
-class AuthUserListView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        users = AuthUser.objects.all()
-        serializer = AuthUserSerializer(users, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = AuthUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
