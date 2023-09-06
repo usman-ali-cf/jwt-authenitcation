@@ -10,23 +10,8 @@ from rest_framework.test import RequestsClient
 
 class TestClass(TestCase):
 
-    def get_token(self):
-        self.register_test()
-        client = APIClient()
-        res = client.post("http://127.0.0.1:8000/user/login/",
-                          data={'email': 'admin@gmail.com', 'password': '123'})
-        return res.data['access']
-
-    def login_test(self):
-        self.register_test()
-        client = APIClient()
-
-        res = client.post("http://127.0.0.1:8000/user/login/",
-                          data={'email': 'ali@gmail.com', 'password': '123'})
-        print(res.data)
-        self.assertEquals(res.status_code, 200)
-
-    def register_test(self):
+    @classmethod
+    def setUpTestData(cls) -> None:
         client = APIClient()
         user_data = {
             "name": "admin",
@@ -38,8 +23,34 @@ class TestClass(TestCase):
             "last_login": None
         }
         response = client.post("http://127.0.0.1:8000/users/register", data=user_data, format='json')
+        cls.user = response.data
+
+    def get_token(self):
+        client = APIClient()
+        res = client.post("http://127.0.0.1:8000/user/login/",
+                         data={'email': 'admin@gmail.com', 'password': '123'})
+        return res.data['access']
+
+    def login_test(self):
+        client = APIClient()
+        res = client.post("http://127.0.0.1:8000/user/login/",
+                          data={'email': 'admin@gmail.com', 'password': '123'})
+        self.assertEquals(res.status_code, 200)
+
+    def register_test(self):
+        client = APIClient()
+        user_data = {
+            "name": "usman",
+            "email": "usman@gmail.com",
+            "gender": "male",
+            "city": "lahore",
+            "is_admin": True,
+            "password": "123",
+            "last_login": None
+        }
+        response = client.post("http://127.0.0.1:8000/users/register", data=user_data, format='json')
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(response.data['name'], "admin")
+        self.assertEquals(response.data['name'], "usman")
 
     def get_user_test(self):
         client = APIClient()
