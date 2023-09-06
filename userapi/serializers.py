@@ -13,7 +13,14 @@ class AuthUserSerializer(serializers.ModelSerializer):
     }
 
     def create(self, validated_data):
-        user = AuthUser.objects.create(email=validated_data['email'],name=validated_data['name'])
+        user = AuthUser.objects.create(
+            email=validated_data['email'],
+            name=validated_data['name'],
+            gender=validated_data['gender'],
+            city=validated_data['city'],
+            is_admin=validated_data['is_admin'],
+            last_login=validated_data['last_login']
+        )
         user.set_password(validated_data['password'])
         user.save()
         return user
