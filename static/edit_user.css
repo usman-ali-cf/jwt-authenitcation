@@ -1,0 +1,15 @@
+
+.input-field {
+    height: 30px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 250px;
+    margin: 0px 0px 20px 0px;
+    color: #7a7a7a;
+    background-color: #cdf2f7;
+}
+
+.input:field:focus {
+    outline: 0;
+}

@@ -6,7 +6,7 @@ class AuthUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AuthUser
-        fields = ['name', 'email', 'gender', 'city', 'is_admin', 'password', 'last_login']
+        fields = ['id', 'name', 'email', 'gender', 'city', 'is_admin', 'password', 'last_login']
 
     extra_kwargs = {
         'password': {'write_only': True}
@@ -23,4 +23,13 @@ class AuthUserSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        user = super().update(instance, validated_data)
+        try:
+            user.set_password(validated_data['password'])
+            user.save()
+        except KeyError:
+            pass
         return user

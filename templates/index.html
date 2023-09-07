@@ -1,0 +1,29 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script defer type="text/javascript" src="{% static 'index.js' %}" ></script>
+</head>
+<body>
+  <h1> Your Profile </h1>
+    <div class="user-div">
+        <div class="card-container">
+            <h3 id="username_id">{{name}}</h3>
+            <h6 id="user_city_id"> {{city}}</h6>
+            <p id="user_email_id"> {{email}}</p>
+            <div class="buttons">
+                <button class="primary" id="edit_btn_id">
+                    Edit Profile
+                </button>
+                <button class="primary ghost" id="logout-btn">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'edit_user.css' %}">
+    <link rel="stylesheet" href="{% static 'home.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script defer type="text/javascript" src="{% static 'edit.js' %}" ></script>
+</head>
+<body>
+  <h1 id="data"> Your Profile </h1>
+    <div class="user-div">
+        <div class="card-container">
+            <input id="username_id" class="input-field" />
+            <input id="user_city_id" class="input-field" />
+            <input type="email" id="user_email_id" class="input-field" />
+            <input type="password" id="user_password_id" class="input-field" placeholder="**********" />
+            <div class="buttons">
+                <button class="primary" id="edit_btn_id">
+                    Update
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
