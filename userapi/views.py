@@ -1,6 +1,6 @@
 from django.http import HttpResponse
+from django.shortcuts import loader, redirect
 from rest_framework import status
-from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 from .models import AuthUser
 from .serializers import AuthUserSerializer
@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from django.http import JsonResponse
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.views import View
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 # Create your views here.
@@ -18,6 +18,7 @@ class LoginViewToken(TokenObtainPairView):
     """
     a class based view: to authenticate the user and generate jwt token
     """
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
@@ -46,8 +47,28 @@ class RegisterView(APIView):
         return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
 
-def home(request):
-    return HttpResponse("Hello")
+class Home(View):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        template = loader.get_template("index.html")
+        return HttpResponse(template.render())
+
+
+class EditUserForm(View):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        template = loader.get_template("edit_user.html")
+        return HttpResponse(template.render())
+
+
+class LoginFormView(View):
+
+    def get(self, request):
+        template = loader.get_template("login.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
 
 
 class AuthUserListView(APIView):
@@ -81,16 +102,7 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         snippet = self.get_object()
         serialized = AuthUserSerializer(snippet)
-        return Response(serialized.data, status=status.HTTP_200_OK )
-
-    def partial_update(self, request, *args, **kwargs):
-        snippet = self.get_object()
-        data = JSONParser().parse(request)
-        serialized = AuthUserSerializer(snippet, data=data)
-        if serialized.is_valid():
-            serialized.save()
-            return Response(serialized.data, status=status.HTTP_200_OK)
-        return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serialized.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
         snippet = self.get_object()

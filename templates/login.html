@@ -1,0 +1,21 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'login.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script defer type="text/javascript" src="{% static 'login.js' %}" ></script>
+</head>
+<body>
+    <section class="login-section">
+        <h1 class="login-heading"> Users By DRF </h1>
+        <div class="login-div">
+            <p class="login-para"> Let's Open the Door </p>
+            <input id="email_id" type="text" class="input-field" placeholder="user@example.com" />
+            <input id="password_id" type="password" class="input-field"  placeholder="**********" />
+            <a href="" id="login_id" class="login-btn"> Login </a>
+        </div>
+    </section>
+</body>
+</html>
