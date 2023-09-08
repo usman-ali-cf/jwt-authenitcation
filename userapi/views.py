@@ -6,10 +6,13 @@ from .models import AuthUser
 from .serializers import AuthUserSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Create your views here.
 
@@ -31,6 +34,7 @@ class LoginViewToken(TokenObtainPairView):
                 value=token,
                 httponly=True,
             )
+
         return response
 
 
@@ -48,6 +52,7 @@ class RegisterView(APIView):
 
 
 class Home(View):
+    # authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -75,6 +80,7 @@ class AuthUserListView(APIView):
     """
     a class based view: to list all the user data, JWTAuthentication is applied
     """
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -109,3 +115,11 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
         snippet.delete()
         serialized = AuthUserSerializer(snippet)
         return JsonResponse(serialized.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        serializer = AuthUserSerializer(instance=snippet, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'details': 'Invalid data provided.'}, status=status.HTTP_400_BAD_REQUEST)

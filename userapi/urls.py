@@ -4,6 +4,7 @@ from .views import AuthUserListView, RegisterView, AuthUserEditView, LoginViewTo
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path("", Home.as_view(), name="home"),

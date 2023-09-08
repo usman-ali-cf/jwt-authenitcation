@@ -65,3 +65,7 @@ body {
     margin: 0px 0px 20px 0px;
     color: #7a7a7a;
 }
+
+.message {
+    color: red;
+}
