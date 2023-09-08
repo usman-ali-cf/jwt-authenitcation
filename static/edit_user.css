@@ -13,3 +13,7 @@
 .input:field:focus {
     outline: 0;
 }
+
+.message {
+    color: red;
+}

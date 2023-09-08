@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'userapi',
     'rest_framework_simplejwt',
-
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -41,7 +41,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'userapi.auth_middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'JWTAuth.urls'

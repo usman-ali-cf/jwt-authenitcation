@@ -14,6 +14,9 @@ $(document).ready(function () {
             $("#username_id").val(data['name']);
             $("#user_city_id").val(data['city']);
             $("#user_email_id").val(data['email']);
+        },
+        error: function(xhr, status, error) {
+            window.location.replace("http://127.0.0.1:8000/login-user");
         }
     });
     event.preventDefault();
@@ -39,7 +42,9 @@ $('#edit_btn_id').click(()=>{
             window.location.replace("http://127.0.0.1:8000");
         },
         error: function(xhr, status, error) {
+            $("#message").text("Invalid Data Provided!!");
             console.log(xhr.responseText);
+            console.log(error);
         }
     });
 });
