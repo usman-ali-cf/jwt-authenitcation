@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import loader, redirect
 from rest_framework import status
+from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.views import APIView
 from .models import AuthUser
 from .serializers import AuthUserSerializer
@@ -10,6 +11,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
 from django.http import JsonResponse
 from django.views import View
+from .users_permissions import AdminAccess, EditPermission
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -52,11 +54,29 @@ class RegisterView(APIView):
 
 
 class Home(View):
-    # authentication_classes = [JWTAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         template = loader.get_template("index.html")
+        return HttpResponse(template.render())
+
+
+class AdminHome(View):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, AdminAccess]
+
+    def get(self, request):
+        template = loader.get_template("admin_index.html")
+        return HttpResponse(template.render())
+
+
+class UsersList(View):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, AdminAccess]
+
+    def get(self, request):
+        template = loader.get_template("users_list.html")
         return HttpResponse(template.render())
 
 
@@ -76,12 +96,20 @@ class LoginFormView(View):
         return HttpResponse(template.render(context, request))
 
 
+class RegisterFormView(View):
+
+    def get(self, request):
+        template = loader.get_template("register.html")
+        context = {}
+        return HttpResponse(template.render(context, request))
+
+
 class AuthUserListView(APIView):
     """
     a class based view: to list all the user data, JWTAuthentication is applied
     """
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, AdminAccess]
 
     def get(self, request):
         users = AuthUser.objects.all()
@@ -101,7 +129,7 @@ class AuthUserEditView(RetrieveUpdateDestroyAPIView):
         a class based view: to edit any user data, JWTAuthentication is applied
     """
     queryset = AuthUser.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, EditPermission]
     serializer_class = AuthUserSerializer
     lookup_field = "id"
 
