@@ -1,25 +1,26 @@
 from rest_framework import serializers
-from .models import AuthUser
+from .models import AuthUser, Role
 
 
 class AuthUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AuthUser
-        fields = ['id', 'name', 'email', 'gender', 'city', 'is_admin', 'password', 'last_login']
+        fields = ['id', 'name', 'email', 'gender', 'city', 'password', 'role']
 
     extra_kwargs = {
         'password': {'write_only': True}
     }
 
     def create(self, validated_data):
+        role_instance = Role.objects.get(id=validated_data['role'].id)
+
         user = AuthUser.objects.create(
             email=validated_data['email'],
             name=validated_data['name'],
             gender=validated_data['gender'],
             city=validated_data['city'],
-            is_admin=validated_data['is_admin'],
-            last_login=validated_data['last_login']
+            role=role_instance,
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -33,3 +34,10 @@ class AuthUserSerializer(serializers.ModelSerializer):
         except KeyError:
             pass
         return user
+
+
+class RoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Role
+        fields = ['user_role', 'description']

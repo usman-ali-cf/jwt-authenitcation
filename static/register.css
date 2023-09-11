@@ -1,0 +1,89 @@
+body {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    color: #000;
+    font-weight: 900;
+    font-family: 'Rubik', sans-serif;
+}
+
+.register-section {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-heading {
+  cursor: pointer;
+  color: #0A4D68;
+  font-size: 5vmin;
+  font-weight: 200;
+  transition: font-weight 250ms ease-in-out;
+}
+
+.register-div {
+    background-color: #f0f0f0;
+    padding: 50px;
+    margin: 50px;
+    width: 400px;
+    height: 350px;
+    border-radius: 15px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    box-shadow: -3px 3px 6px -4px rgb(173,173,173);
+    -webkit-box-shadow: -3px 3px 6px -4px rgb(173,173,173);
+    -moz-box-shadow: -3px 3px 6px -4px rgb(173,173,173);
+
+}
+
+.register-para {
+    color: #0A4D68;
+    font-family: 'Rubik', sans-serif;
+    height: 50px;
+}
+
+.register-btn {
+    background-color: #088395;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+.input-field {
+    height: 30px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    width: 250px;
+    margin: 0px 0px 20px 0px;
+    color: #7a7a7a;
+}
+
+.select-field {
+    height: 30px;
+    padding: 5px;
+    border: none;
+    border-radius: 5px;
+    width: 250px;
+    margin: 0px 0px 20px 0px;
+    color: #7a7a7a;
+}
+
+.message {
+    color: red;
+}
+
+.guide_text {
+    color: #000;
+    font-family: 'Rubik', sans-serif;
+    height: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
