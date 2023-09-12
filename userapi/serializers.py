@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AuthUser, Role
+from .models import AuthUser, Role, Document
 
 
 class AuthUserSerializer(serializers.ModelSerializer):
@@ -41,3 +41,10 @@ class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = ['user_role', 'description']
+
+
+class DocumentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Document
+        fields = "__all__"

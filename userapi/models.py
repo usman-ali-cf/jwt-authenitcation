@@ -7,6 +7,7 @@ from .managers import UserManager
 ROLE_CHOICES = (
     ("user", "System User"),
     ("admin", "System Admin"),
+    ("super", "Super Admin")
 )
 
 GENDER_CHOICES = (
@@ -37,3 +38,15 @@ class AuthUser(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+    def __str__(self):
+        return self.name
+
+
+class Document(models.Model):
+    file = models.FileField(upload_to="documents", null=True)
+    doc_title = models.CharField(max_length=100, null=True, default="No Title")
+    user = models.ForeignKey(AuthUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.doc_title
