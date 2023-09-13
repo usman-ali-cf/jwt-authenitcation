@@ -1,24 +1,26 @@
 from django.http import HttpResponse
 from django.shortcuts import loader, redirect
 from rest_framework import status
-from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework import generics
 from rest_framework.views import APIView
-from .models import AuthUser, Document
+from .models import AuthUser, Document, Role
 from .serializers import AuthUserSerializer, DocumentSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.response import Response
+from rest_framework import viewsets
 from django.http import JsonResponse
 from django.views import View
 from .users_permissions import (
-    AdminAccess, UserAdminPermission, SuperAdmin,
+    AdminAccess, UserAdminPermission,
     UserPostPermission, UserRetrievePermission,
     PostPermission, GetPermission
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import action
 
 # Create your views here.
 
@@ -44,19 +46,6 @@ class LoginViewToken(TokenObtainPairView):
         return response
 
 
-class RegisterView(APIView):
-    """
-    a class based view: to create new user by using serializer
-    """
-
-    def post(self, request):
-        serializer = AuthUserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-
-
 class Home(View):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -72,15 +61,6 @@ class AdminHome(View):
 
     def get(self, request):
         template = loader.get_template("admin_index.html")
-        return HttpResponse(template.render())
-
-
-class UsersList(View):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, AdminAccess]
-
-    def get(self, request):
-        template = loader.get_template("users_list.html")
         return HttpResponse(template.render())
 
 
@@ -108,141 +88,67 @@ class RegisterFormView(View):
         return HttpResponse(template.render(context, request))
 
 
-class AuthUserListView(APIView):
+class UserViewSet(viewsets.ModelViewSet):
     """
-    a class based view: to list all the user data, JWTAuthentication is applied
+    View to list and create users in the system.
+
+    * Requires JWT authentication.
+    * Only admin users are able to access all users.
+    * Anyone can create user
     """
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, AdminAccess | PostPermission]
-
-    def get(self, request):
-        users = AuthUser.objects.all()
-        serializer = AuthUserSerializer(users, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = AuthUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AuthUserEditView(RetrieveUpdateDestroyAPIView):
-    """
-        a class based view: to edit any user data, JWTAuthentication is applied
-    """
-    queryset = AuthUser.objects.all()
-    permission_classes = [IsAuthenticated, UserAdminPermission]
     serializer_class = AuthUserSerializer
+    queryset = AuthUser.objects.all()
     lookup_field = "id"
 
-    def retrieve(self, request, *args, **kwargs):
-        user = self.get_object()
-        serialized = AuthUserSerializer(user)
-        return Response(serialized.data, status=status.HTTP_200_OK)
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'create':
+            permission_classes = [IsAuthenticated, AdminAccess | PostPermission]
+        else:
+            permission_classes = [IsAuthenticated, UserAdminPermission]
+        return [permission() for permission in permission_classes]
 
-    def delete(self, request, *args, **kwargs):
-        user = self.get_object()
-        user.delete()
-        serialized = AuthUserSerializer(user)
-        return JsonResponse(serialized.data)
-
-    def partial_update(self, request, *args, **kwargs):
-        user = self.get_object()
-        serializer = AuthUserSerializer(instance=user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({'details': 'Invalid data provided.'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AdminUsers(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, SuperAdmin]
-
-    def get(self, request):
-        users = AuthUser.objects.filter(role_id=1)
-        serializer = AuthUserSerializer(users, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = AuthUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+    @action(detail=True, methods=['patch'], permission_classes=[AdminAccess])
+    def add_lead(self, request, id):
+        try:
+            user = self.get_object()
+            lead_list = request.data['lead']
+            leads = []
+            for lead in lead_list:
+                leads.append(AuthUser.objects.get(id=lead))
+            user.lead.set(leads)
+            user.save()
+            return Response(data={"detail": "Success"}, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist as e:
+            return Response({"details": "Lead User does not exists"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DocumentListView(APIView):
+class DocumentViewSet(viewsets.ModelViewSet):
     """
-    View to list all users in the system.
+    View to list and create document in the system.
 
     * Requires JWT authentication.
-    * Only admin users are able to access this view.
-    * But authenticated user can create document
+    * admin users are able to access all documents.
+    * user is able to create and view his/her own documents
     """
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, AdminAccess | UserPostPermission | GetPermission]
-
-    def get(self, request):
-        try:
-            user_id = request.user.id
-            documents = Document.objects.filter(user=user_id)
-            serializer = DocumentSerializer(documents, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response({"details": "Documents Not Found"}, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        serializer = DocumentSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AdminDocumentListView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated, AdminAccess]
-
-    def get(self, request):
-        try:
-            documents = Document.objects.all()
-            serializer = DocumentSerializer(documents, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except:
-            return Response({"details": "Documents Not Found"}, status=status.HTTP_200_OK)
-
-
-class DocumentDetailView(RetrieveUpdateDestroyAPIView):
-    """
-    View Update Delete document from the system.
-
-    * Requires JWT authentication.
-    * admin users are able to access this view with all operation.
-    * non-admin users can just view their documents
-    """
-    queryset = Document.objects.all()
-    permission_classes = [IsAuthenticated, AdminAccess | UserRetrievePermission]
     serializer_class = DocumentSerializer
     lookup_field = "id"
 
-    def retrieve(self, request, *args, **kwargs):
-        document = self.get_object()
-        serialized = DocumentSerializer(document)
-        return Response(serialized.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        try:
+            user = self.request.user
+            role_id = user.role.id
+            role = Role.objects.get(id=role_id)
+            if role.user_role == 'admin' or role.user_role == 'super':
+                return Document.objects.all()
+            return Document.objects.filter(user=user.id)
+        except ObjectDoesNotExist as e:
+            return Document.objects.none()
 
-    def delete(self, request, *args, **kwargs):
-        document = self.get_object()
-        document.delete()
-        serialized = DocumentSerializer(document)
-        return Response(serialized.data, status=status.HTTP_200_OK)
-
-    def partial_update(self, request, *args, **kwargs):
-        document = self.get_object()
-        serializer = DocumentSerializer(instance=document, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'create':
+            permission_classes = [IsAuthenticated, AdminAccess | UserPostPermission | GetPermission]
+        else:
+            permission_classes = [IsAuthenticated, AdminAccess | UserRetrievePermission]
+        return [permission() for permission in permission_classes]
