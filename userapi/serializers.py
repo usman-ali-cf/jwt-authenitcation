@@ -1,39 +1,33 @@
 from rest_framework import serializers
 from .models import AuthUser, Role, Document
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class AuthUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AuthUser
-        fields = ['id', 'name', 'email', 'gender', 'city', 'password', 'role']
+        fields = ['id', 'name', 'email', 'gender', 'city', 'password', 'role', 'lead']
 
     extra_kwargs = {
         'password': {'write_only': True}
     }
 
     def create(self, validated_data):
-        role_instance = Role.objects.get(id=validated_data['role'].id)
-
-        user = AuthUser.objects.create(
-            email=validated_data['email'],
-            name=validated_data['name'],
-            gender=validated_data['gender'],
-            city=validated_data['city'],
-            role=role_instance,
-        )
+        user = AuthUser.objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
 
     def update(self, instance, validated_data):
-        user = super().update(instance, validated_data)
         try:
+            user = super().update(instance, validated_data)
             user.set_password(validated_data['password'])
             user.save()
-        except KeyError:
-            pass
-        return user
+            return user
+        except ObjectDoesNotExist as e:
+            print('User Not found: ', e)
+            return None
 
 
 class RoleSerializer(serializers.ModelSerializer):

@@ -34,6 +34,7 @@ class AuthUser(AbstractBaseUser):
     gender = models.CharField(choices=GENDER_CHOICES, max_length=30, null=True)
     city = models.CharField(max_length=30, blank=True, null=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True)
+    lead = models.ManyToManyField('AuthUser', blank=True)
 
     objects = UserManager()
 
